@@ -1,11 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Comparision Slider</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="index.js"></script>
 </head>
+
 <body>
-    <h1>Image Comparison Slider 1</h1>
+    <div>
+        <h1>Image Comparison Slider</h1>
+        <div class="img-comp-container">
+            <div class="img-comp-img">
+                <img src="./images/img1.png" width="auto" height="300" id="img1">
+            </div>
+            <div class="img-comp-img img-comp-overlay">
+                <img src="./images/img2.png" width="auto" height="300" id="img2">
+            </div>
+        </div>
+        <div>
+            <input type="file" id="uploadImage1" accept="image/*" placeholder="Upload Image One" title="Upload Image One">
+            <input type="file" id="uploadImage2" accept="image/*">
+            <button onclick="handleImageUpload(1)">Upload Image One</button>
+            <button onclick="handleImageUpload(2)">Upload Image Two</button>
+        </div>
+    </div>
+
+    <script>initComparisons();</script>
 </body>
+
 </html>
