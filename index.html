@@ -2,33 +2,104 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Comparision Slider</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="index.js"></script>
+    <style>
+        .img-comp-container {
+            height: fit-content;
+            position: fixed;
+            width: 100vw;
+            margin: 0;
+        }
+
+        .img-comp-img {
+            position: absolute;
+            height: auto;
+            overflow: hidden;
+        }
+
+        .img-comp-img img {
+            display: block;
+            vertical-align: middle;
+            height: auto;
+            width: auto;
+        }
+
+        .img-comp-slider {
+            position: absolute;
+            z-index: 9;
+            cursor: ew-resize;
+            width: 3rem;
+            height: 3rem;
+            background-color: #febd59;
+            opacity: 0.7;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 
 <body>
-    <div>
-        <h1>Image Comparison Slider</h1>
-        <div class="img-comp-container">
-            <div class="img-comp-img">
-                <img src="./images/img1.png" width="auto" height="300" id="img1">
-            </div>
-            <div class="img-comp-img img-comp-overlay">
-                <img src="./images/img2.png" width="auto" height="300" id="img2">
-            </div>
+    <div class="img-comp-container">
+        <div class="img-comp-img">
+            <img src="https://static.wixstatic.com/media/925667_a368bc6f60364f508c2eb5361647eb82~mv2.png" id="img1">
         </div>
-        <div>
-            <input type="file" id="uploadImage1" accept="image/*" placeholder="Upload Image One" title="Upload Image One">
-            <input type="file" id="uploadImage2" accept="image/*">
-            <button onclick="handleImageUpload(1)">Upload Image One</button>
-            <button onclick="handleImageUpload(2)">Upload Image Two</button>
+        <div class="img-comp-img img-comp-overlay">
+            <img src="https://static.wixstatic.com/media/0b75d9_a5b24a1f683142ab9f785f5e1dece5d5~mv2.png" id="img2">
         </div>
     </div>
+    <script>
+        function initComparisons() {
+        var x, i;
+        x = document.getElementsByClassName("img-comp-overlay");
+        for (i = 0; i < x.length; i++) {
+            compareImages(x[i]);
+        }
+        function compareImages(img) {
+            var slider, img, clicked = 0, w, h;
+            w = img.offsetWidth;
+            h = img.offsetHeight;
+            img.style.width = (w / 2) + "px";
+            slider = document.createElement("DIV");
+            slider.setAttribute("class", "img-comp-slider");
+            img.parentElement.insertBefore(slider, img);
+            slider.style.top = (h / 2) - (slider.offsetHeight / 2) + "px";
+            slider.style.left = (w / 2) - (slider.offsetWidth / 2) + "px";
+            slider.addEventListener("mousedown", slideReady);
+            window.addEventListener("mouseup", slideFinish);
+            slider.addEventListener("touchstart", slideReady);
+            window.addEventListener("touchend", slideFinish);
+            function slideReady(e) {
+                e.preventDefault();
+                clicked = 1;
+                window.addEventListener("mousemove", slideMove);
+                window.addEventListener("touchmove", slideMove);
+            }
+            function slideFinish() {
+                clicked = 0;
+            }
+            function slideMove(e) {
+                var pos;
+                if (clicked == 0) return false;
+                pos = getCursorPos(e)
+                if (pos < 0) pos = 0;
+                if (pos > w) pos = w;
+                slide(pos);
+            }
+            function getCursorPos(e) {
+                var a, x = 0;
+                e = (e.changedTouches) ? e.changedTouches[0] : e;
+                a = img.getBoundingClientRect();
+                x = e.pageX - a.left;
+                x = x - window.pageXOffset;
+                return x;
+            }
+            function slide(x) {
+                img.style.width = x + "px";
+                slider.style.left = img.offsetWidth - (slider.offsetWidth / 2) + "px";
+            }
+        }
+    }
 
-    <script>initComparisons();</script>
+        initComparisons();
+    </script>
 </body>
 
 </html>
