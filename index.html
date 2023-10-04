@@ -1,105 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        .img-comp-container {
-            height: fit-content;
-            position: fixed;
-            width: 100vw;
+        *,
+        *::after,
+        *::before {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .img-comp-img {
-            position: absolute;
-            height: auto;
-            overflow: hidden;
-        }
-
-        .img-comp-img img {
+        img {
             display: block;
-            vertical-align: middle;
-            height: auto;
-            width: auto;
+            max-width: 100%;
         }
 
-        .img-comp-slider {
+        main {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
             position: absolute;
-            z-index: 9;
-            cursor: ew-resize;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            --position: 50%;
+        }
+
+        .image-container {
+            aspect-ratio: 3.07/1;
+        }
+
+        .slider-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: left;
+        }
+
+        .image-before {
+            position: absolute;
+            inset: 0;
+            width: var(--position);
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slider:focus-visible ~ .slider-button {
+            outline: 5px solid black;
+            outline-offset: 3px;
+        }
+
+        .slider-line {
+            position: absolute;
+            inset: 0;
+            width: 0.2rem;
+            height: 100%;
+            background-color: #fff;
+            left: var(--position);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .slider-button {
+            position: absolute;
+            background-color: #fff;
+            color: black;
+            padding: 0.5rem;
+            border-radius: 100vw;
+            display: grid;
+            place-items: center;
+            top: 50%;
+            left: var(--position);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 1px 1px 1px hsl(0, 50%, 2%, 0.5);
             width: 3rem;
             height: 3rem;
-            background-color: #febd59;
-            opacity: 0.7;
-            border-radius: 50%;
+        }
+        @media (max-width: 768px) {
+            .slider-button {
+                width: 2rem;
+                height: 2rem;
+            }
+            svg{
+                width: 1rem !important;
+                height: 1rem !important;
+            }
+            .slider-line {
+                width: 0.1rem;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="img-comp-container">
-        <div class="img-comp-img">
-            <img src="https://static.wixstatic.com/media/925667_a368bc6f60364f508c2eb5361647eb82~mv2.png" id="img1">
+    <main>
+        <div class="container">
+            <div class="image-container">
+                <img class="image-before slider-image"
+                    src="https://static.wixstatic.com/media/925667_8685062fa4c2422e93955abfaf94dc3e~mv2.gif"
+                    alt="color photo">
+                <img class="image-after slider-image"
+                    src="https://static.wixstatic.com/media/925667_d3b351a047ad440b9f340872e159e70d~mv2.gif"
+                    alt="black and white">
+            </div>
+            <input type="range" min="0" max="100" value="50" aria-label="Percentage of before photo shown"
+                class="slider">
+            <div class="slider-line" aria-hidden="true"></div>
+            <div class="slider-button" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 256 256">
+                    <rect width="256" height="256" fill="none"></rect>
+                    <line x1="128" y1="40" x2="128" y2="216" fill="none" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="16"></line>
+                    <line x1="96" y1="128" x2="16" y2="128" fill="none" stroke="currentColor"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></line>
+                    <polyline points="48 160 16 128 48 96" fill="none" stroke="currentColor"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></polyline>
+                    <line x1="160" y1="128" x2="240" y2="128" fill="none" stroke="currentColor"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></line>
+                    <polyline points="208 96 240 128 208 160" fill="none" stroke="currentColor"
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></polyline>
+                </svg>
+            </div>
         </div>
-        <div class="img-comp-img img-comp-overlay">
-            <img src="https://static.wixstatic.com/media/0b75d9_a5b24a1f683142ab9f785f5e1dece5d5~mv2.png" id="img2">
-        </div>
-    </div>
+    </main>
     <script>
-        function initComparisons() {
-        var x, i;
-        x = document.getElementsByClassName("img-comp-overlay");
-        for (i = 0; i < x.length; i++) {
-            compareImages(x[i]);
-        }
-        function compareImages(img) {
-            var slider, img, clicked = 0, w, h;
-            w = img.offsetWidth;
-            h = img.offsetHeight;
-            img.style.width = (w / 2) + "px";
-            slider = document.createElement("DIV");
-            slider.setAttribute("class", "img-comp-slider");
-            img.parentElement.insertBefore(slider, img);
-            slider.style.top = (h / 2) - (slider.offsetHeight / 2) + "px";
-            slider.style.left = (w / 2) - (slider.offsetWidth / 2) + "px";
-            slider.addEventListener("mousedown", slideReady);
-            window.addEventListener("mouseup", slideFinish);
-            slider.addEventListener("touchstart", slideReady);
-            window.addEventListener("touchend", slideFinish);
-            function slideReady(e) {
-                e.preventDefault();
-                clicked = 1;
-                window.addEventListener("mousemove", slideMove);
-                window.addEventListener("touchmove", slideMove);
-            }
-            function slideFinish() {
-                clicked = 0;
-            }
-            function slideMove(e) {
-                var pos;
-                if (clicked == 0) return false;
-                pos = getCursorPos(e)
-                if (pos < 0) pos = 0;
-                if (pos > w) pos = w;
-                slide(pos);
-            }
-            function getCursorPos(e) {
-                var a, x = 0;
-                e = (e.changedTouches) ? e.changedTouches[0] : e;
-                a = img.getBoundingClientRect();
-                x = e.pageX - a.left;
-                x = x - window.pageXOffset;
-                return x;
-            }
-            function slide(x) {
-                img.style.width = x + "px";
-                slider.style.left = img.offsetWidth - (slider.offsetWidth / 2) + "px";
-            }
-        }
-    }
+        const container = document.querySelector('.container');
+        const slider = document.querySelector('.slider');
 
-        initComparisons();
+        slider.addEventListener('input', function (e) {
+            container.style.setProperty('--position', e.target.value + '%');
+        });
     </script>
 </body>
-
 </html>
