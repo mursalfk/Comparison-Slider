@@ -1,92 +1,77 @@
-function initComparisons() {
-    var x, i;
-    /*find all elements with an "overlay" class:*/
-    x = document.getElementsByClassName("img-comp-overlay");
-    for (i = 0; i < x.length; i++) {
-        /*once for each "overlay" element:
-        pass the "overlay" element as a parameter when executing the compareImages function:*/
-        compareImages(x[i]);
-    }
-    function compareImages(img) {
-        var slider, img, clicked = 0, w, h;
-        /*get the width and height of the img element*/
-        w = img.offsetWidth;
-        h = img.offsetHeight;
-        /*set the width of the img element to 50%:*/
-        img.style.width = (w / 2) + "px";
-        /*create slider:*/
-        slider = document.createElement("DIV");
-        slider.setAttribute("class", "img-comp-slider");
-        /*insert slider*/
-        img.parentElement.insertBefore(slider, img);
-        /*position the slider in the middle:*/
-        slider.style.top = (h / 2) - (slider.offsetHeight / 2) + "px";
-        slider.style.left = (w / 2) - (slider.offsetWidth / 2) + "px";
-        /*execute a function when the mouse button is pressed:*/
-        slider.addEventListener("mousedown", slideReady);
-        /*and another function when the mouse button is released:*/
-        window.addEventListener("mouseup", slideFinish);
-        /*or touched (for touch screens:*/
-        slider.addEventListener("touchstart", slideReady);
-        /*and released (for touch screens:*/
-        window.addEventListener("touchend", slideFinish);
-        function slideReady(e) {
-            /*prevent any other actions that may occur when moving over the image:*/
-            e.preventDefault();
-            /*the slider is now clicked and ready to move:*/
-            clicked = 1;
-            /*execute a function when the slider is moved:*/
-            window.addEventListener("mousemove", slideMove);
-            window.addEventListener("touchmove", slideMove);
+
+var file1 = {}
+var file1Selected = false;
+var file2 = {}
+var file2Selected = false;
+
+function selectImage(imageNumber) {
+    const inputElement = document.getElementById(`imageUpload${imageNumber}`);
+    const file = inputElement.files[0];
+
+    // Check if the selected file is an image (e.g., by checking its file type)
+    if (file && file.type.startsWith('image/')) {
+        if (imageNumber === 1) {
+            file1 = file;
+            file1Selected = true;
+            document.querySelector(`label[for="imageUpload${imageNumber}"]`).innerText = 'Change After Image';
+            document.querySelector(`label[for="imageUpload${imageNumber}"]`).style.backgroundColor = 'green';
+        } else {
+            file2 = file;
+            file2Selected = true;
+            document.querySelector(`label[for="imageUpload${imageNumber}"]`).innerText = 'Change Before Image';
+            document.querySelector(`label[for="imageUpload${imageNumber}"]`).style.backgroundColor = 'green';
         }
-        function slideFinish() {
-            /*the slider is no longer clicked:*/
-            clicked = 0;
+
+        // Check if both file1 and file2 are not empty
+        if (file1Selected && file2Selected) {
+            document.querySelector('.showDiff').style.setProperty('visibility', 'visible');
         }
-        function slideMove(e) {
-            var pos;
-            /*if the slider is no longer clicked, exit this function:*/
-            if (clicked == 0) return false;
-            /*get the cursor's x position:*/
-            pos = getCursorPos(e)
-            /*prevent the slider from being positioned outside the image:*/
-            if (pos < 0) pos = 0;
-            if (pos > w) pos = w;
-            /*execute a function that will resize the overlay image according to the cursor:*/
-            slide(pos);
-        }
-        function getCursorPos(e) {
-            var a, x = 0;
-            e = (e.changedTouches) ? e.changedTouches[0] : e;
-            /*get the x positions of the image:*/
-            a = img.getBoundingClientRect();
-            /*calculate the cursor's x coordinate, relative to the image:*/
-            x = e.pageX - a.left;
-            /*consider any page scrolling:*/
-            x = x - window.pageXOffset;
-            return x;
-        }
-        function slide(x) {
-            /*resize the image:*/
-            img.style.width = x + "px";
-            /*position the slider:*/
-            slider.style.left = img.offsetWidth - (slider.offsetWidth / 2) + "px";
-        }
+    } else {
+        // Display an alert if the selected file is not an image
+        alert('Please select a valid image file.');
+        inputElement.value = ''; // Clear the file input
     }
 }
 
-function handleImageUpload(imageNumber) {
-    var inputElement = document.getElementById(`uploadImage${imageNumber}`);
-    var imgElement = document.getElementById(`img${imageNumber}`);
+function setAspectRatio(imageNumber) {
+    const imageElement = document.querySelector(`.image-${imageNumber}`);
+    const aspectRatio = imageElement.naturalWidth / imageElement.naturalHeight;
+    const aspectRatioString = aspectRatio.toString();
+    document.querySelector('.image-container').style.setProperty('--aspect-ratio', aspectRatioString);
+}
 
-    if (inputElement.files.length > 0) {
-        var file = inputElement.files[0];
-        var reader = new FileReader();
+const container = document.querySelector('.container');
+const slider = document.querySelector('.slider');
 
-        reader.onload = function(e) {
-            imgElement.src = e.target.result;
+slider.addEventListener('input', function (e) {
+    container.style.setProperty('--position', e.target.value + '%');
+});
+
+function loadImages() {
+    if (file1 && file2) {
+        const image1 = document.querySelector('.image-1');
+        const image2 = document.querySelector('.image-2');
+
+        image1.src = URL.createObjectURL(file1);
+        image2.src = URL.createObjectURL(file2);
+
+        const checkAspectRatio = () => {
+            const aspectRatio1 = image1.naturalWidth / image1.naturalHeight;
+            const aspectRatio2 = image2.naturalWidth / image2.naturalHeight;
+
+            if (aspectRatio1 === aspectRatio2) {
+                // Both images have the same aspect ratio, proceed
+                setAspectRatio(1);
+                setAspectRatio(2);
+            } else {
+                // Aspect ratios are different, show an alert and clear the images
+                alert('Aspect ratios of the images must be the same. Please select images with the same aspect ratio.');
+                image1.src = './images/img1.png';
+                image2.src = './images/img2.png';
+            }
         };
 
-        reader.readAsDataURL(file);
+        image1.onload = checkAspectRatio;
+        image2.onload = checkAspectRatio;
     }
 }
